@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cuentas del viaje</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F3F7F8; --surface:#FFFFFF; --ink:#16313B; --muted:#5B7480;
+  --line:#D5E2E6; --sea:#1F5D6E; --sun:#F0B429; --sun-ink:#3A2A00;
+  --good:#1E7A4F; --bad:#B23A3A;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Figtree", "Segoe UI", system-ui, -apple-system, sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0F1E24; --surface:#16292F; --ink:#E6F0F2; --muted:#93AAB3;
+    --line:#2A434B; --sea:#7FC3D4; --sun:#F0B429; --sun-ink:#2A1E00;
+    --good:#5CC88F; --bad:#F08080;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0F1E24; --surface:#16292F; --ink:#E6F0F2; --muted:#93AAB3;
+  --line:#2A434B; --sea:#7FC3D4; --sun:#F0B429; --sun-ink:#2A1E00;
+  --good:#5CC88F; --bad:#F08080;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;font-variant-numeric:tabular-nums}
+.wrap{max-width:960px;margin:0 auto;padding:1.5rem 1rem 3rem}
+h1,h2{font-family:var(--display);line-height:1.1;margin:0}
+h2{font-size:1.35rem;font-weight:700;margin-bottom:.75rem}
+
+/* Encabezado */
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:1rem;padding-bottom:1.25rem;border-bottom:2px dashed var(--line);margin-bottom:1.5rem}
+.trip-name{font-family:var(--display);font-weight:800;font-size:clamp(2rem,6vw,3.25rem);color:var(--ink);background:transparent;border:0;border-bottom:2px solid transparent;padding:0;width:100%;max-width:16ch;letter-spacing:-.02em}
+.trip-name:hover{border-bottom-color:var(--line)}
+.trip-name:focus{outline:none;border-bottom-color:var(--sun)}
+.subtitle{color:var(--muted);margin:.35rem 0 0}
+.total{text-align:right}
+.total strong{display:block;font-family:var(--display);font-size:1.9rem;font-weight:700}
+.total span{color:var(--muted);font-size:.9rem}
+
+/* Layout */
+.grid{display:grid;gap:1.5rem;grid-template-columns:1fr}
+@media (min-width:820px){.grid{grid-template-columns:minmax(0,1fr) minmax(0,1.15fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:1.25rem}
+.panel + .panel{margin-top:1.5rem}
+
+/* Formularios */
+label{display:block;font-size:.875rem;font-weight:600;margin:.75rem 0 .3rem}
+input[type=text],input[type=number],select{width:100%;font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:.6rem .75rem}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.row{display:flex;gap:.5rem}
+.row > *{flex:1}
+.row > button{flex:0 0 auto}
+button{font:inherit;font-weight:600;cursor:pointer;border-radius:8px;border:0;padding:.6rem 1rem}
+.btn-main{background:var(--sun);color:var(--sun-ink)}
+.btn-main:hover{filter:brightness(1.05)}
+.btn-ghost{background:transparent;color:var(--sea);border:1px solid var(--line)}
+.btn-ghost:hover{border-color:var(--sea)}
+.btn-full{width:100%;margin-top:1rem;padding:.75rem}
+
+/* Personas */
+.people{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.75rem}
+.chip{display:inline-flex;align-items:center;gap:.4rem;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:.3rem .4rem .3rem .8rem;font-weight:500}
+.chip button{background:transparent;color:var(--muted);padding:0 .35rem;line-height:1;font-size:1.1rem}
+.chip button:hover{color:var(--bad)}
+.hint{color:var(--muted);font-size:.9rem;margin:.5rem 0 0}
+
+.checks{display:flex;flex-wrap:wrap;gap:.4rem}
+.check{position:relative}
+.check input{position:absolute;opacity:0;inset:0;cursor:pointer}
+.check span{display:inline-block;padding:.35rem .75rem;border-radius:999px;border:1px solid var(--line);font-size:.9rem;color:var(--muted)}
+.check input:checked + span{background:var(--sea);border-color:var(--sea);color:var(--surface)}
+.check input:focus-visible + span{outline:3px solid var(--sun);outline-offset:2px}
+.link-btn{background:none;color:var(--sea);padding:0;font-size:.85rem;font-weight:600;text-decoration:underline;margin-left:.5rem}
+.error{color:var(--bad);font-size:.9rem;margin:.5rem 0 0;min-height:1.2em}
+
+/* Lista de gastos */
+.expenses{list-style:none;margin:0;padding:0}
+.expenses li{display:grid;grid-template-columns:1fr auto auto;gap:.75rem;align-items:center;padding:.75rem 0;border-bottom:1px solid var(--line)}
+.expenses li:last-child{border-bottom:0}
+.exp-title{font-weight:600}
+.exp-meta{color:var(--muted);font-size:.85rem}
+.exp-amount{font-family:var(--display);font-weight:700;font-size:1.1rem}
+.del{background:transparent;color:var(--muted);padding:.25rem .5rem;font-size:1.2rem;line-height:1}
+.del:hover{color:var(--bad)}
+.empty{color:var(--muted);padding:.5rem 0;margin:0}
+
+/* Balances */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.95rem}
+th{text-align:left;font-weight:600;color:var(--muted);font-size:.85rem;padding:.4rem .5rem;border-bottom:1px solid var(--line)}
+td{padding:.55rem .5rem;border-bottom:1px solid var(--line)}
+th.num,td.num{text-align:right}
+.pos{color:var(--good);font-weight:600}
+.neg{color:var(--bad);font-weight:600}
+
+/* Tickets de pago: el elemento protagonista */
+.tickets{display:grid;gap:.85rem;margin-top:.5rem}
+.ticket{position:relative;display:grid;grid-template-columns:1fr auto;background:var(--sun);color:var(--sun-ink);border-radius:12px;overflow:hidden}
+.ticket .route{padding:.9rem 1rem}
+.ticket .from-to{font-family:var(--display);font-weight:700;font-size:1.15rem;line-height:1.2}
+.ticket .arrow{display:inline-block;margin:0 .35rem;opacity:.7}
+.ticket .label{font-size:.8rem;opacity:.8}
+.ticket .stub{padding:.9rem 1.1rem;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;border-left:2px dashed rgba(58,42,0,.35);position:relative}
+.ticket .stub::before,.ticket .stub::after{content:"";position:absolute;left:-9px;width:16px;height:16px;border-radius:50%;background:var(--surface)}
+.ticket .stub::before{top:-8px}
+.ticket .stub::after{bottom:-8px}
+.ticket .money{font-family:var(--display);font-weight:800;font-size:1.35rem;white-space:nowrap}
+.ticket.paid{opacity:.45}
+.ticket.paid .from-to{text-decoration:line-through}
+.ticket .tick{margin-top:.3rem;background:rgba(58,42,0,.12);color:var(--sun-ink);padding:.2rem .6rem;font-size:.8rem}
+.settled{padding:1rem;border:2px dashed var(--line);border-radius:12px;color:var(--muted);text-align:center}
+
+.actions{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1rem}
+.toast{position:fixed;left:50%;bottom:calc(1.25rem + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(150%);background:var(--ink);color:var(--paper);padding:.6rem 1rem;border-radius:8px;font-weight:600;transition:transform .25s ease}
+.toast.show{transform:translateX(-50%) translateY(0)}
+@media (prefers-reduced-motion: reduce){.toast{transition:none}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div style="flex:1;min-width:240px">
+      <label for="tripName" class="sr">Nombre del viaje</label>
+      <input id="tripName" class="trip-name" type="text" value="Viaje a Bariloche" maxlength="40">
+      <p class="subtitle">Anotá quién pagó qué y al final te decimos quién le transfiere a quién.</p>
+    </div>
+    <div class="total">
+      <strong id="grandTotal">$ 0</strong>
+      <span id="totalSub">gastados en total</span>
+    </div>
+  </header>
+
+  <div class="grid">
+    <!-- Columna izquierda: carga -->
+    <div>
+      <section class="panel" aria-labelledby="hPeople">
+        <h2 id="hPeople">Quiénes viajan</h2>
+        <form id="personForm" class="row" autocomplete="off">
+          <label for="personName" class="sr">Nombre</label>
+          <input id="personName" type="text" placeholder="Nombre, por ej. Lucía" maxlength="24">
+          <button type="submit" class="btn-ghost">Sumar</button>
+        </form>
+        <p class="error" id="personError" role="alert"></p>
+        <div class="people" id="people"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="hExpense">
+        <h2 id="hExpense">Nuevo gasto</h2>
+        <form id="expenseForm" autocomplete="off">
+          <label for="desc">Qué se pagó</label>
+          <input id="desc" type="text" placeholder="Nafta, súper, cabaña…" maxlength="40">
+          <div class="row">
+            <div>
+              <label for="amount">Monto</label>
+              <input id="amount" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0">
+            </div>
+            <div>
+              <label for="payer">Lo pagó</label>
+              <select id="payer"></select>
+            </div>
+          </div>
+          <label>Se divide entre <button type="button" class="link-btn" id="toggleAll">Todos / ninguno</button></label>
+          <div class="checks" id="splitWith"></div>
+          <p class="error" id="expenseError" role="alert"></p>
+          <button type="submit" class="btn-main btn-full">Agregar gasto</button>
+        </form>
+      </section>
+    </div>
+
+    <!-- Columna derecha: resultados -->
+    <div>
+      <section class="panel" aria-labelledby="hSettle">
+        <h2 id="hSettle">Quién le paga a quién</h2>
+        <div class="tickets" id="tickets"></div>
+        <div class="actions">
+          <button class="btn-ghost" id="copyBtn" type="button">Copiar resumen para WhatsApp</button>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="hBalance">
+        <h2 id="hBalance">Cómo quedó cada uno</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Persona</th><th class="num">Puso</th><th class="num">Le toca</th><th class="num">Saldo</th></tr></thead>
+            <tbody id="balances"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="hList">
+        <h2 id="hList">Gastos cargados</h2>
+        <ul class="expenses" id="expenses"></ul>
+        <div class="actions">
+          <button class="btn-ghost" id="resetBtn" type="button">Empezar un viaje nuevo</button>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  const KEY = "divisor-viaje-v1";
+  const fmt = new Intl.NumberFormat("es-AR",{style:"currency",currency:"ARS",maximumFractionDigits:2,minimumFractionDigits:0});
+  const money = cents => fmt.format(cents/100);
+  const uid = () => Math.random().toString(36).slice(2,9);
+
+  const demo = () => {
+    const p = [{id:"a",name:"Lucía"},{id:"b",name:"Tomás"},{id:"c",name:"Juli"}];
+    return {
+      trip:"Viaje a Bariloche", people:p, paid:{},
+      expenses:[
+        {id:uid(),desc:"Cabaña 3 noches",amount:18000000,payer:"a",split:["a","b","c"]},
+        {id:uid(),desc:"Nafta ida y vuelta",amount:6000000,payer:"b",split:["a","b","c"]},
+        {id:uid(),desc:"Asado",amount:4500000,payer:"c",split:["a","b","c"]}
+      ]
+    };
+  };
+
+  let state;
+  try { const raw = localStorage.getItem(KEY); state = raw ? JSON.parse(raw) : demo(); }
+  catch(e){ state = demo(); }
+  if(!state || !Array.isArray(state.people) || !Array.isArray(state.expenses)) state = demo();
+  state.paid = state.paid || {};
+
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){} };
+  const $ = id => document.getElementById(id);
+  const nameOf = id => (state.people.find(p=>p.id===id)||{name:"?"}).name;
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+  function toast(msg){
+    const t=$("toast"); t.textContent=msg; t.classList.add("show");
+    clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove("show"),2000);
+  }
+
+  // Cálculo de saldos en centavos, repartiendo el resto de la división
+  function compute(){
+    const put={}, owe={};
+    state.people.forEach(p=>{put[p.id]=0;owe[p.id]=0;});
+    state.expenses.forEach(e=>{
+      const split=e.split.filter(id=>id in owe);
+      if(!(e.payer in put) || !split.length) return;
+      put[e.payer]+=e.amount;
+      const base=Math.floor(e.amount/split.length);
+      let rest=e.amount-base*split.length;
+      split.forEach(id=>{ owe[id]+=base+(rest>0?1:0); if(rest>0) rest--; });
+    });
+    const bal={}; state.people.forEach(p=>bal[p.id]=put[p.id]-owe[p.id]);
+    return {put,owe,bal};
+  }
+
+  // Mínimas transferencias: el que más debe le paga al que más tiene que cobrar
+  function settle(bal){
+    const deb=[],cred=[];
+    Object.entries(bal).forEach(([id,v])=>{ if(v<0) deb.push({id,v:-v}); else if(v>0) cred.push({id,v}); });
+    deb.sort((a,b)=>b.v-a.v); cred.sort((a,b)=>b.v-a.v);
+    const out=[]; let i=0,j=0;
+    while(i<deb.length && j<cred.length){
+      const x=Math.min(deb[i].v,cred[j].v);
+      if(x>0) out.push({from:deb[i].id,to:cred[j].id,amount:x});
+      deb[i].v-=x; cred[j].v-=x;
+      if(deb[i].v===0) i++; if(cred[j].v===0) j++;
+    }
+    return out;
+  }
+
+  function render(){
+    $("tripName").value = state.trip;
+    document.title = state.trip + " · cuentas";
+
+    // Personas
+    const used = new Set(); state.expenses.forEach(e=>{used.add(e.payer); e.split.forEach(id=>used.add(id));});
+    $("people").innerHTML = state.people.length ? state.people.map(p=>`
+      <span class="chip">${esc(p.name)}
+        <button type="button" data-rm="${p.id}" aria-label="Quitar a ${esc(p.name)}" title="${used.has(p.id)?'Tiene gastos cargados':'Quitar'}">×</button>
+      </span>`).join("") : `<p class="hint">Sumá al menos dos personas para empezar.</p>`;
+
+    // Selector de pagador y checkboxes
+    const prevPayer=$("payer").value;
+    $("payer").innerHTML = state.people.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("");
+    if(state.people.some(p=>p.id===prevPayer)) $("payer").value=prevPayer;
+    const prevChecked = new Set([...document.querySelectorAll('#splitWith input:checked')].map(i=>i.value));
+    const hadChecks = document.querySelectorAll('#splitWith input').length>0;
+    $("splitWith").innerHTML = state.people.map(p=>`
+      <label class="check" style="margin:0;font-weight:400"><input type="checkbox" value="${p.id}" ${(!hadChecks||prevChecked.has(p.id)||!document.querySelector('#splitWith input[value="'+p.id+'"]'))?'checked':''}><span>${esc(p.name)}</span></label>`).join("");
+
+    // Gastos
+    const total = state.expenses.reduce((s,e)=>s+e.amount,0);
+    $("grandTotal").textContent = money(total);
+    $("totalSub").textContent = state.people.length
+      ? `gastados en total, ${money(Math.round(total/state.people.length))} por cabeza en promedio`
+      : "gastados en total";
+    $("expenses").innerHTML = state.expenses.length ? state.expenses.slice().reverse().map(e=>{
+      const all = e.split.length===state.people.length;
+      return `<li>
+        <div><div class="exp-title">${esc(e.desc)}</div>
+        <div class="exp-meta">Pagó ${esc(nameOf(e.payer))}, ${all?'entre todos':'entre '+e.split.map(nameOf).map(esc).join(", ")}</div></div>
+        <div class="exp-amount">${money(e.amount)}</div>
+        <button class="del" type="button" data-del="${e.id}" aria-label="Borrar ${esc(e.desc)}">×</button>
+      </li>`;}).join("") : `<p class="empty">Todavía no hay gastos. Cargá el primero con el formulario.</p>`;
+
+    // Saldos
+    const {put,owe,bal}=compute();
+    $("balances").innerHTML = state.people.map(p=>{
+      const b=bal[p.id];
+      const cls=b>0?'pos':b<0?'neg':'';
+      const txt=b>0?`cobra ${money(b)}`:b<0?`debe ${money(-b)}`:'al día';
+      return `<tr><td>${esc(p.name)}</td><td class="num">${money(put[p.id])}</td><td class="num">${money(owe[p.id])}</td><td class="num ${cls}">${txt}</td></tr>`;
+    }).join("");
+
+    // Tickets
+    const tr = settle(bal);
+    const keys = new Set(tr.map(t=>t.from+">"+t.to+":"+t.amount));
+    Object.keys(state.paid).forEach(k=>{ if(!keys.has(k)) delete state.paid[k]; });
+    $("tickets").innerHTML = tr.length ? tr.map(t=>{
+      const k=t.from+">"+t.to+":"+t.amount, done=!!state.paid[k];
+      return `<div class="ticket ${done?'paid':''}">
+        <div class="route">
+          <div class="label">Transfiere</div>
+          <div class="from-to">${esc(nameOf(t.from))}<span class="arrow" aria-hidden="true">✈</span>${esc(nameOf(t.to))}</div>
+        </div>
+        <div class="stub">
+          <div class="money">${money(t.amount)}</div>
+          <button type="button" class="tick" data-paid="${esc(k)}">${done?'Desmarcar':'Ya pagó'}</button>
+        </div>
+      </div>`;}).join("")
+      : `<div class="settled">${state.expenses.length?'Están todos a mano. Nadie le debe nada a nadie.':'Cuando cargues gastos, acá aparecen las transferencias.'}</div>`;
+
+    save();
+  }
+
+  // Eventos
+  $("tripName").addEventListener("input", e=>{ state.trip = e.target.value.trim() || "Mi viaje"; document.title=state.trip+" · cuentas"; save(); });
+
+  $("personForm").addEventListener("submit", e=>{
+    e.preventDefault();
+    const n=$("personName").value.trim();
+    $("personError").textContent="";
+    if(!n){ $("personError").textContent="Escribí un nombre."; return; }
+    if(state.people.some(p=>p.name.toLowerCase()===n.toLowerCase())){ $("personError").textContent=`${n} ya está en la lista.`; return; }
+    state.people.push({id:uid(),name:n});
+    $("personName").value=""; $("personName").focus();
+    render();
+  });
+
+  $("people").addEventListener("click", e=>{
+    const id=e.target.dataset.rm; if(!id) return;
+    const inUse = state.expenses.some(x=>x.payer===id||x.split.includes(id));
+    if(inUse){ $("personError").textContent=`${nameOf(id)} tiene gastos cargados. Borrá esos gastos primero.`; return; }
+    state.people = state.people.filter(p=>p.id!==id);
+    $("personError").textContent="";
+    render();
+  });
+
+  $("toggleAll").addEventListener("click", ()=>{
+    const boxes=[...document.querySelectorAll('#splitWith input')];
+    const allOn=boxes.every(b=>b.checked);
+    boxes.forEach(b=>b.checked=!allOn);
+  });
+
+  $("expenseForm").addEventListener("submit", e=>{
+    e.preventDefault();
+    const err=$("expenseError"); err.textContent="";
+    const desc=$("desc").value.trim();
+    const amount=Math.round(parseFloat(String($("amount").value).replace(",","."))*100);
+    const payer=$("payer").value;
+    const split=[...document.querySelectorAll('#splitWith input:checked')].map(i=>i.value);
+    if(state.people.length<2){ err.textContent="Sumá al menos dos personas en “Quiénes viajan”."; return; }
+    if(!desc){ err.textContent="Poné qué se pagó, por ejemplo “Nafta”."; $("desc").focus(); return; }
+    if(!amount || amount<=0){ err.textContent="El monto tiene que ser mayor a cero."; $("amount").focus(); return; }
+    if(!split.length){ err.textContent="Elegí entre quiénes se divide."; return; }
+    state.expenses.push({id:uid(),desc,amount,payer,split});
+    $("desc").value=""; $("amount").value=""; $("desc").focus();
+    render();
+    toast(`Gasto agregado: ${desc}`);
+  });
+
+  $("expenses").addEventListener("click", e=>{
+    const id=e.target.dataset.del; if(!id) return;
+    state.expenses=state.expenses.filter(x=>x.id!==id);
+    render(); toast("Gasto borrado");
+  });
+
+  $("tickets").addEventListener("click", e=>{
+    const k=e.target.dataset.paid; if(!k) return;
+    if(state.paid[k]) delete state.paid[k]; else state.paid[k]=true;
+    render();
+  });
+
+  $("copyBtn").addEventListener("click", async ()=>{
+    const {bal}=compute(); const tr=settle(bal);
+    const total=state.expenses.reduce((s,e)=>s+e.amount,0);
+    let txt=`*${state.trip}*\nTotal gastado: ${money(total)}\n\n`;
+    txt += tr.length ? "*Transferencias:*\n"+tr.map(t=>`• ${nameOf(t.from)} → ${nameOf(t.to)}: ${money(t.amount)}${state.paid[t.from+">"+t.to+":"+t.amount]?' ✅':''}`).join("\n")
+                     : "Estamos todos a mano 🙌";
+    try{ await navigator.clipboard.writeText(txt); toast("Resumen copiado"); }
+    catch(err){
+      const ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select();
+      try{ document.execCommand("copy"); toast("Resumen copiado"); }catch(e2){ toast("No se pudo copiar"); }
+      ta.remove();
+    }
+  });
+
+  $("resetBtn").addEventListener("click", ()=>{
+    if(!confirm("Se borran todas las personas y gastos de este viaje. ¿Seguimos?")) return;
+    state={trip:"Mi viaje",people:[],expenses:[],paid:{}};
+    render(); $("tripName").focus(); $("tripName").select();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
